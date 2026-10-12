@@ -1,6 +1,6 @@
 import time, os
-from utils.db import init_db, save_trade, load_trades
-from utils.telegram import send_telegram
+from utils.db import init_db, save_trade, load_trades, get_config
+from utils.telegram import send_telegram, start_telegram_polling
 from datetime import datetime
 from config.settings import settings
 from exchange.binance_client import BinanceClient
@@ -14,21 +14,6 @@ from ui.dashboard import render_dashboard
 from utils.ai import get_ai_signal
 
 logger = setup_logger(settings.LOG_LEVEL)
-HISTORY_PATH = "data/trade_history.json"
-
-def load_history():
-    if os.path.exists(HISTORY_PATH):
-        try:
-            with open(HISTORY_PATH) as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
-
-def save_history(history):
-    os.makedirs(os.path.dirname(HISTORY_PATH), exist_ok=True)
-    with open(HISTORY_PATH, "w") as f:
-        json.dump(history, f, indent=2)
 
 def auto_symbols(discovery, n=3):
     syms = [s for s in discovery.load() if s.endswith(settings.QUOTE_ASSET)]
@@ -43,6 +28,8 @@ def auto_symbols(discovery, n=3):
     return out[:n]
 
 def main():
+    init_db()
+    start_telegram_polling()
     client = BinanceClient().get_client()
     market = MarketData(client)
     strategy = SimpleStrategy()
@@ -55,14 +42,15 @@ def main():
     elif settings.SYMBOL:
         symbols = [settings.SYMBOL]
     else:
-        symbols = auto_symbols(discovery, settings.MAX_SYMBOLS)
+        max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
+        symbols = auto_symbols(discovery, max_sym)
 
     info = {
         "Bot Type": settings.BOT_TYPE,
         "Exchange": "Binance",
         "Symbols": ", ".join(symbols),
         "Profit Currency": settings.QUOTE_ASSET,
-        "Risk Level": settings.RISK_LEVEL,
+        "Risk Level": get_config("RISK_LEVEL", settings.RISK_LEVEL),
         "Interval": settings.INTERVAL,
         "Dry Run": settings.DRY_RUN,
         "Testnet": settings.TESTNET,
@@ -73,10 +61,12 @@ def main():
 
     last_orders = {s: {"buy": "-", "sell": "-"} for s in symbols}
     history = load_trades()
-    init_db()
     prev_bal = None
 
     while True:
+        if get_config("BOT_PAUSED", "false").lower() == "true":
+            time.sleep(5)
+            continue
         rows = []
         for symbol in symbols:
             try:
