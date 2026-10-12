@@ -13,6 +13,7 @@ from execution.executor import Executor
 from utils.logger import setup_logger
 from ui.dashboard import render_dashboard
 from utils.ai import get_ai_signal
+from utils.api_server import start_api_server
 
 logger = setup_logger(settings.LOG_LEVEL)
 
@@ -50,6 +51,7 @@ def main():
         "AI Providers": settings.AI_PROVIDERS if settings.USE_AI else "-",
     }
 
+    start_api_server(int(os.getenv("API_PORT", "8080")))
     last_orders = {}
     history = load_trades()
     prev_bal = None
