@@ -1,7 +1,17 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+def _load_env(path=".env"):
+    if not os.path.exists(path):
+        return
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip())
+
+_load_env()
 
 class Settings:
     API_KEY = os.getenv("BINANCE_API_KEY", "")
