@@ -4,6 +4,23 @@ from config.settings import settings
 from utils.db import get_config, set_config
 
 class Handler(BaseHTTPRequestHandler):
+    def _auth_ok(self):
+        import os
+        expected = os.getenv("MINIAPP_TOKEN")
+        if not expected:
+            return True
+        q = self.path.split("?",1)[1] if "?" in self.path else ""
+        token = None
+        for part in q.split("&"):
+            if part.startswith("t="):
+                token = part[2:]
+        if token == expected:
+            return True
+        auth = self.headers.get("Authorization","")
+        if auth == "Bearer " + expected:
+            return True
+        return False
+
     def _json(self, status, data):
         body = json.dumps(data).encode()
         self.send_response(status)
@@ -21,6 +38,9 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        if self.path.startswith("/api") and not self._auth_ok():
+            self._json(401, {"ok": False, "error": "unauthorized"})
+            return
         if self.path == "/api/status":
             status = {
                 "bot_type": settings.BOT_TYPE,
@@ -53,6 +73,9 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
+        if not self._auth_ok():
+            self._json(401, {"ok": False, "error": "unauthorized"})
+            return
         n = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(n).decode() if n else "{}"
         try:

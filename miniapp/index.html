@@ -90,9 +90,13 @@
 
 <script>
 async function api(path, method="GET", body=null){
+  const token=new URLSearchParams(location.search).get('t') || localStorage.getItem('miniapp_token') || '';
+  const sep=path.includes('?')?'&':'?';
+  const url=token ? path+sep+'t='+encodeURIComponent(token) : path;
   const opts={method, headers:{"Content-Type":"application/json"}};
+  if(token) opts.headers.Authorization='Bearer '+token;
   if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(path,opts); return r.json();
+  const r=await fetch(url,opts); return r.json();
 }
 async function loadStatus(){
   const s=await api('/api/status');
