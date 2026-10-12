@@ -17,7 +17,32 @@ async def _run():
 
     @client.on(events.NewMessage(pattern="/start"))
     async def handler(event):
-        await event.respond("Bot trading aktif.", buttons=[
+        from config.settings import settings
+        from exchange.binance_client import BinanceClient
+        from utils.db import get_config
+        cli = BinanceClient().get_client()
+        balance = float(cli.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
+        uname = event.sender.username or "-"
+        uid = event.sender_id
+        text = (
+            "<blockquote>"
+            f"Bot Type: {settings.BOT_TYPE}<br>"
+            "Exchange: Binance<br>"
+            f"Symbols: {settings.SYMBOL or settings.SYMBOLS or '-'}<br>"
+            f"Profit Currency: {settings.QUOTE_ASSET}<br>"
+            f"Risk Level: {get_config('RISK_LEVEL', settings.RISK_LEVEL)}<br>"
+            f"Interval: {settings.INTERVAL}<br>"
+            f"Dry Run: {settings.DRY_RUN}<br>"
+            f"Testnet: {settings.TESTNET}<br>"
+            f"Indicators: {'AI multi-provider' if settings.USE_AI else 'SMA crossover'}<br>"
+            f"AI Mode: {'ON' if settings.USE_AI else 'OFF'}<br>"
+            f"AI Providers: {settings.AI_PROVIDERS if settings.USE_AI else '-'}<br>"
+            f"Telegram Username: @{uname}<br>"
+            f"Telegram UserID: {uid}<br>"
+            f"Balance: {balance} {settings.QUOTE_ASSET}"
+            "</blockquote>"
+        )
+        await event.respond(text, parse_mode='html', buttons=[
             [Button.inline("Status", b"status"), Button.inline("Pause", b"pause")],
             [Button.inline("Resume", b"resume"), Button.inline("Back", b"back")],
         ])
