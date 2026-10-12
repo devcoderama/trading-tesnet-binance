@@ -11,6 +11,7 @@ _pending_ai_delete = set()
 _pending_tf = set()
 _pending_syms = set()
 _pending_risk = set()
+_pending_mode = set()
 
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
@@ -54,6 +55,10 @@ async def _run():
     @client.on(events.CallbackQuery)
     async def cb(event):
         data = event.data.decode()
+        if data == "trading_symbolmode":
+            _pending_mode.add(event.sender_id)
+            await event.edit("Kirim mode: single / multi / random", buttons=[[Button.inline("Back", b"menu_trading")]])
+            return
         if data == "trading_timeframe":
             _pending_tf.add(event.sender_id)
             await event.edit("Kirim timeframe (contoh: 1m, 5m, 15m)", buttons=[[Button.inline("Back", b"menu_trading")]])
@@ -111,6 +116,11 @@ async def _run():
 
     @client.on(events.NewMessage)
     async def _capture_token(event):
+        if event.sender_id in _pending_mode:
+            from utils.db import set_config
+            set_config("SYMBOL_MODE", (event.message.text or "").strip().lower())
+            _pending_mode.discard(event.sender_id)
+            await event.reply("SYMBOL_MODE updated.")
         if event.sender_id in _pending_tf:
             from utils.db import set_config
             set_config("INTERVAL", (event.message.text or "").strip())
