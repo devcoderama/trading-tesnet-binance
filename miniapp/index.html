@@ -1,8 +1,106 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Binance Bot MiniApp</title></head>
-<body>
-<h2>Binance Bot MiniApp</h2>
-<p>Mini app dasar. Hubungkan ke API bot Anda lewat Cloudflare Tunnel URL.</p>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Binance Bot MiniApp</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div class="max-w-4xl mx-auto p-4 md:p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold">Binance Bot MiniApp</h1>
+      <p class="text-slate-400 text-sm">Mirror menu Telegram: Trading, AI, Status Bot</p>
+    </header>
+
+    <section class="grid md:grid-cols-2 gap-4 mb-4">
+      <div class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800">
+        <h2 class="font-semibold mb-3 text-emerald-400">Info Bot</h2>
+        <div class="space-y-1 text-sm text-slate-300">
+          <div>Bot Type: Testnet Spot Bot</div>
+          <div>Exchange: Binance</div>
+          <div>Profit Currency: USDT</div>
+          <div>Risk Level: <span id="risk">MEDIUM</span></div>
+          <div>Interval: <span id="interval">1m</span></div>
+          <div>Symbols: <span id="symbols">-</span></div>
+          <div>Symbol Mode: <span id="symbolMode">auto</span></div>
+          <div>AI Mode: <span id="aiMode">multi</span></div>
+          <div>Balance: <span id="balance">0</span> USDT</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800">
+        <h2 class="font-semibold mb-3 text-sky-400">Trading</h2>
+        <div class="space-y-3">
+          <input id="tf" placeholder="Timeframe (1m,5m,15m)" class="w-full bg-slate-800 rounded-xl px-3 py-2 outline-none"/>
+          <button onclick="setTf()" class="w-full bg-sky-600 hover:bg-sky-500 rounded-xl py-2">Set Timeframe</button>
+
+          <input id="syms" placeholder="Symbols: BTCUSDT,ETHUSDT" class="w-full bg-slate-800 rounded-xl px-3 py-2 outline-none"/>
+          <button onclick="setSyms()" class="w-full bg-sky-600 hover:bg-sky-500 rounded-xl py-2">Set Symbols</button>
+
+          <select id="mode" class="w-full bg-slate-800 rounded-xl px-3 py-2">
+            <option value="single">single</option>
+            <option value="multi">multi</option>
+            <option value="random">random</option>
+          </select>
+          <button onclick="setMode()" class="w-full bg-sky-600 hover:bg-sky-500 rounded-xl py-2">Set Symbol Mode</button>
+
+          <select id="riskSel" class="w-full bg-slate-800 rounded-xl px-3 py-2">
+            <option>LOW</option>
+            <option selected>MEDIUM</option>
+            <option>HIGH</option>
+          </select>
+          <button onclick="setRisk()" class="w-full bg-sky-600 hover:bg-sky-500 rounded-xl py-2">Set Risk</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid md:grid-cols-2 gap-4 mb-4">
+      <div class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800">
+        <h2 class="font-semibold mb-3 text-violet-400">AI</h2>
+        <div class="space-y-3">
+          <input id="provider" placeholder="Provider (gemini, openai, ...)" class="w-full bg-slate-800 rounded-xl px-3 py-2"/>
+          <input id="token" placeholder="Token/API Key" type="password" class="w-full bg-slate-800 rounded-xl px-3 py-2"/>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="aiSave()" class="bg-violet-600 hover:bg-violet-500 rounded-xl py-2">Save/Add/Edit</button>
+            <button onclick="aiDelete()" class="bg-rose-600 hover:bg-rose-500 rounded-xl py-2">Delete</button>
+          </div>
+          <select id="aiModeSel" class="w-full bg-slate-800 rounded-xl px-3 py-2">
+            <option value="single">single</option>
+            <option value="multi" selected>multi</option>
+          </select>
+          <button onclick="setAiMode()" class="w-full bg-violet-600 hover:bg-violet-500 rounded-xl py-2">Set AI Mode</button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800">
+        <h2 class="font-semibold mb-3 text-amber-400">Status Bot</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="botStart()" class="bg-emerald-600 hover:bg-emerald-500 rounded-xl py-2">Start (Resume)</button>
+          <button onclick="botStop()" class="bg-rose-600 hover:bg-rose-500 rounded-xl py-2">Stop (Pause)</button>
+        </div>
+        <div class="mt-3 text-sm text-slate-400" id="statusMsg">Siap.</div>
+      </div>
+    </section>
+
+    <footer class="text-xs text-slate-500 mt-6">
+      MiniApp UI. Integrasi penuh dengan bot membutuhkan endpoint API/backend (opsional).
+    </footer>
+  </div>
+
+<script>
+function msg(t){ document.getElementById('statusMsg').innerText = t; }
+function setTf(){ const v=document.getElementById('tf').value.trim(); document.getElementById('interval').innerText=v||'-'; msg('Timeframe di-set (lokal): '+v); }
+function setSyms(){ const v=document.getElementById('syms').value.trim(); document.getElementById('symbols').innerText=v||'-'; msg('Symbols di-set (lokal): '+v); }
+function setMode(){ const v=document.getElementById('mode').value; document.getElementById('symbolMode').innerText=v; msg('Symbol mode: '+v); }
+function setRisk(){ const v=document.getElementById('riskSel').value; document.getElementById('risk').innerText=v; msg('Risk: '+v); }
+function aiSave(){ const p=document.getElementById('provider').value.trim(); const t=document.getElementById('token').value.trim(); if(!p||!t){msg('Provider & token wajib.');return;} msg('AI token '+p+' (lokal) tersimpan validasi via bot.'); }
+function aiDelete(){ const p=document.getElementById('provider').value.trim(); if(!p){msg('Isi provider untuk hapus.');return;} msg('Delete '+p+' (lokal).'); }
+function setAiMode(){ const v=document.getElementById('aiModeSel').value; document.getElementById('aiMode').innerText=v; msg('AI mode: '+v); }
+function botStart(){ msg('Bot START (resume) diminta.'); }
+function botStop(){ msg('Bot STOP (pause) diminta.'); }
+</script>
 </body>
 </html>
+PY
+echo done
