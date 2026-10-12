@@ -89,8 +89,15 @@ def get_ai_signal(closes, symbol):
         f"{symbol}: {closes[-20:]}. Reply with exactly one word: BUY, SELL, or HOLD. "
         "No explanation."
     )
+    mode = "multi"
+    try:
+        from utils.db import get_config
+        mode = get_config("AI_MODE", "multi") or "multi"
+    except Exception:
+        pass
+    providers = (PROVIDERS[:1] if str(mode).lower() == "single" else PROVIDERS)
     last_err = None
-    for provider in PROVIDERS:
+    for provider in providers:
         try:
             out = _call(provider, prompt)
             sig = _normalize(out)
