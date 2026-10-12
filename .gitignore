@@ -4,6 +4,7 @@ __pycache__/
 logs/
 *.log
 data/trade_history.json
+*.db
 .venv/
 venv/
 .idea/
