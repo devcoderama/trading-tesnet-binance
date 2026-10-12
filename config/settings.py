@@ -23,7 +23,7 @@ class Settings:
     TELEGRAM_USER_ID = os.getenv("TELEGRAM_USER_ID", "")
     TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
     USE_AI = os.getenv("USE_AI", "false").lower() == "true"
-    AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini").lower()
+    AI_PROVIDERS = os.getenv("AI_PROVIDERS", os.getenv("AI_PROVIDER", "gemini")).lower()  # comma-separated
     AI_API_KEY = os.getenv("AI_API_KEY", "")
     SYMBOL = os.getenv("SYMBOL", "")
     SYMBOLS = os.getenv("SYMBOLS", "")  # comma separated

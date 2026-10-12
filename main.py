@@ -11,6 +11,7 @@ from risk.risk_manager import RiskManager
 from execution.executor import Executor
 from utils.logger import setup_logger
 from ui.dashboard import render_dashboard
+from utils.ai import get_ai_signal
 
 logger = setup_logger(settings.LOG_LEVEL)
 HISTORY_PATH = "data/trade_history.json"
@@ -65,7 +66,9 @@ def main():
         "Interval": settings.INTERVAL,
         "Dry Run": settings.DRY_RUN,
         "Testnet": settings.TESTNET,
-        "Indicators": "SMA crossover (fast/slow)",
+        "Indicators": "AI multi-provider" if settings.USE_AI else "SMA crossover (fast/slow)",
+        "AI Mode": "ON" if settings.USE_AI else "OFF",
+        "AI Providers": settings.AI_PROVIDERS if settings.USE_AI else "-",
     }
 
     last_orders = {s: {"buy": "-", "sell": "-"} for s in symbols}
@@ -78,7 +81,11 @@ def main():
         for symbol in symbols:
             try:
                 closes = market.get_closes(symbol, settings.INTERVAL, limit=50)
-                sig = strategy.signal(closes)
+                if settings.USE_AI:
+                    sig, ai_used = get_ai_signal(closes, symbol)
+                else:
+                    sig = strategy.signal(closes)
+                    ai_used = "SMA"
                 ind = strategy.indicators(closes)
                 price = market.latest_price(symbol)
                 cur_bal = float(client.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
@@ -90,7 +97,7 @@ def main():
                         row = [datetime.now().strftime("%H:%M:%S"), "BUY", symbol, qty, res.get("status"), price]
                         history.append(row[:5])
                         save_trade(row)
-                        send_telegram(f"BUY {symbol} qty={qty} price={price}")
+                        send_telegram(f"BUY {symbol} qty={qty} price={price} via {ai_used}")
                 elif sig == "SELL":
                     base = symbol.replace(settings.QUOTE_ASSET, "")
                     bal = float(client.get_asset_balance(asset=base)["free"])
@@ -101,7 +108,7 @@ def main():
                         row = [datetime.now().strftime("%H:%M:%S"), "SELL", symbol, qty, res.get("status"), price]
                         history.append(row[:5])
                         save_trade(row)
-                        send_telegram(f"SELL {symbol} qty={qty} price={price}")
+                        send_telegram(f"SELL {symbol} qty={qty} price={price} via {ai_used}")
                 rows.append({
                     "symbol": symbol,
                     "interval": settings.INTERVAL,
