@@ -5,17 +5,25 @@ from utils.db import get_config, set_config, load_trades, save_audit, load_audit
 
 class Handler(BaseHTTPRequestHandler):
     def _auth_ok(self):
-        import os
+        import os, hmac, hashlib
         expected = os.getenv("MINIAPP_TOKEN")
         if not expected:
             return True
+        # cookie
+        cookie = self.headers.get("Cookie","")
+        for part in cookie.split(";"):
+            part=part.strip()
+            if part.startswith("session="):
+                val=part[len("session="):]
+                if val == hmac.new(expected.encode(), b"session", hashlib.sha256).hexdigest():
+                    return True
+        # query token
         q = self.path.split("?",1)[1] if "?" in self.path else ""
-        token = None
         for part in q.split("&"):
             if part.startswith("t="):
-                token = part[2:]
-        if token == expected:
-            return True
+                if part[2:] == expected:
+                    return True
+        # bearer
         auth = self.headers.get("Authorization","")
         if auth == "Bearer " + expected:
             return True
@@ -94,6 +102,20 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(body)
         except Exception:
             data = {}
+        if self.path == "/api/login":
+            pwd = str(data.get("password", ""))
+            expected = os.getenv("MINIAPP_TOKEN")
+            if expected and pwd == expected:
+                import hmac, hashlib
+                val = hmac.new(expected.encode(), b"session", hashlib.sha256).hexdigest()
+                self.send_response(200)
+                self.send_header("Set-Cookie", f"session={val}; Path=/; HttpOnly")
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            else:
+                self._json(401, {"ok": False, "error": "invalid password"})
+            return
         if self.path == "/api/ai/validate":
             provider = str(data.get("provider", "")).strip().lower()
             token = str(data.get("token", "")).strip()

@@ -107,10 +107,15 @@ async function api(path, method="GET", body=null){
   const token=new URLSearchParams(location.search).get('t') || localStorage.getItem('miniapp_token') || '';
   const sep=path.includes('?')?'&':'?';
   const url=token ? path+sep+'t='+encodeURIComponent(token) : path;
-  const opts={method, headers:{"Content-Type":"application/json"}};
+  const opts={method, headers:{"Content-Type":"application/json"}, credentials:'include'};
   if(token) opts.headers.Authorization='Bearer '+token;
   if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(url,opts); return r.json();
+  let r=await fetch(url,opts);
+  if(r.status===401){
+    const pwd=prompt('Password miniapp:');
+    if(pwd){ await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({password:pwd})}); r=await fetch(url,opts); }
+  }
+  return r.json();
 }
 async function loadProviders(){ const r=await api('/api/ai/providers'); document.getElementById('providers').innerText=(r.providers||[]).join(',')||'-'; }
 async function addProvider(){ const name=document.getElementById('newProvider').value.trim(); if(!name){msg('nama provider wajib');return;} const r=await api('/api/ai/providers/add','POST',{name}); if(r.ok){ msg('Provider added.'); await loadProviders(); } else msg(r.error||'gagal'); }
