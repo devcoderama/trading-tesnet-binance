@@ -14,6 +14,12 @@ def init_db():
         key TEXT PRIMARY KEY,
         value TEXT
     )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        time TEXT,
+        action TEXT,
+        detail TEXT
+    )""")
     # remove telegram secrets from DB (stored in .env)
     for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_USER_ID", "TELEGRAM_CHANNEL_ID"):
         cur.execute("DELETE FROM config WHERE key=?", (k,))
@@ -72,3 +78,22 @@ def set_config(key, value):
     cur.execute("INSERT INTO config (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, str(value)))
     conn.commit()
     conn.close()
+
+
+def save_audit(action, detail):
+    init_db()
+    import datetime
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO audit_log (time, action, detail) VALUES (?,?,?)", (datetime.datetime.now().isoformat(), action, str(detail)))
+    conn.commit()
+    conn.close()
+
+def load_audit(limit=20):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT time, action, detail FROM audit_log ORDER BY id DESC LIMIT ?", (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return [list(r) for r in rows]

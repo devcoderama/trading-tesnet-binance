@@ -1,7 +1,7 @@
 import json, os, threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from config.settings import settings
-from utils.db import get_config, set_config, load_trades
+from utils.db import get_config, set_config, load_trades, save_audit, load_audit
 
 class Handler(BaseHTTPRequestHandler):
     def _auth_ok(self):
@@ -45,6 +45,9 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/ai/providers":
             provs = [x.strip() for x in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if x.strip()]
             self._json(200, {"providers": provs})
+            return
+        if p == "/api/audit":
+            self._json(200, {"audit": load_audit(20)})
             return
         if p == "/api/history":
             rows = load_trades()[-20:]
@@ -104,6 +107,7 @@ class Handler(BaseHTTPRequestHandler):
                 _call(provider, "Reply with one word: HOLD")
                 from utils.ai import save_ai_token
                 save_ai_token(provider, token)
+                save_audit("ai.validate", provider)
                 self._json(200, {"ok": True})
             except Exception as e:
                 self._json(400, {"ok": False, "error": str(e)})
@@ -134,6 +138,7 @@ class Handler(BaseHTTPRequestHandler):
             val = str(data.get("value", ""))
             if key:
                 set_config(key, val)
+                save_audit("config.update", f"{key}={val}")
                 self._json(200, {"ok": True})
             else:
                 self._json(400, {"ok": False, "error": "missing key"})

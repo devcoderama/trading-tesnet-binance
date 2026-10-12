@@ -133,12 +133,24 @@ async function setAiMode(){ const v=document.getElementById('aiModeSel').value; 
 async function botStart(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'false'}); msg('Bot resumed.'); }
 async function botStop(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'true'}); msg('Bot paused.'); }
 async function loadHistory(){ const r=await api('/api/history'); const rows=r.history||[]; const tb=document.getElementById('historyBody'); if(tb) tb.innerHTML=rows.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${x[4]}</td></tr>`).join(''); }
+async function loadAudit(){ const r=await api('/api/audit'); const rows=r.audit||[]; const tb=document.getElementById('auditBody'); if(tb) tb.innerHTML=rows.map(x=>`<tr><td class="text-[10px]">${x[0]}</td><td class="text-[10px]">${x[1]}</td><td class="text-[10px]">${x[2]}</td></tr>`).join(''); }
 loadStatus();
 loadProviders();
 loadHistory();
+loadAudit();
 setInterval(loadStatus,5000);
 setInterval(loadHistory,10000);
+setInterval(loadAudit,15000);
 </script>
+  <section class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800 mb-4">
+    <h2 class="font-semibold mb-3 text-slate-300">Audit Log</h2>
+    <div class="overflow-x-auto max-h-48">
+      <table class="w-full text-xs">
+        <thead><tr class="text-slate-400"><th>Time</th><th>Action</th><th>Detail</th></tr></thead>
+        <tbody id="auditBody"></tbody>
+      </table>
+    </div>
+  </section>
   <div id="toast" class="hidden fixed bottom-4 right-4 bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl text-sm shadow-lg"></div>
 </body>
 </html>
