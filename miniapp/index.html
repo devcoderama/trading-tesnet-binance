@@ -11,6 +11,7 @@
     <header class="mb-6">
       <h1 class="text-2xl md:text-3xl font-bold">Binance Bot MiniApp</h1>
       <p class="text-slate-400 text-sm">Mirror menu Telegram: Trading, AI, Status Bot</p>
+      <button onclick="toggleTheme()" class="mt-2 text-xs px-3 py-1 rounded bg-slate-800">Toggle Theme</button>
     </header>
 
     <section class="grid md:grid-cols-2 gap-4 mb-4">
@@ -122,6 +123,7 @@ async function removeProvider(){ const name=document.getElementById('newProvider
   document.getElementById('aiMode').innerText=s.ai_mode||'-';
   document.getElementById('statusMsg').innerText=s.paused==='true'?'Bot paused':'Bot running';
 }
+function toggleTheme(){ const d=document.documentElement; const next=d.classList.contains('dark')?'light':'dark'; d.classList.remove('dark','light'); d.classList.add(next); localStorage.setItem('theme',next); if(next==='light'){ document.body.classList.remove('bg-slate-950','text-slate-100'); document.body.classList.add('bg-slate-50','text-slate-900'); } else { document.body.classList.remove('bg-slate-50','text-slate-900'); document.body.classList.add('bg-slate-950','text-slate-100'); } }
 function msg(t){ const el=document.getElementById('statusMsg'); if(el) el.innerText=t; const toast=document.getElementById('toast'); if(toast){ toast.innerText=t; toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'),2500);} }
 async function setTf(){ const v=document.getElementById('tf').value.trim(); if(!v) return; await api('/api/config','POST',{key:'INTERVAL',value:v}); document.getElementById('interval').innerText=v; msg('Timeframe set: '+v); }
 async function setSyms(){ const v=document.getElementById('syms').value.trim(); if(!v) return; await api('/api/config','POST',{key:'SYMBOLS',value:v}); document.getElementById('symbols').innerText=v; msg('Symbols set.'); }
