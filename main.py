@@ -43,7 +43,12 @@ def main():
     cfg_symbol = get_config("SYMBOL", settings.SYMBOL) or ""
     cfg_interval = get_config("INTERVAL", settings.INTERVAL) or settings.INTERVAL
 
-    if cfg_symbols:
+    cfg_mode = get_config("SYMBOL_MODE", "auto") or "auto"
+
+    if cfg_mode == "random":
+        max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
+        symbols = auto_symbols(discovery, max_sym)
+    elif cfg_symbols:
         symbols = [s.strip() for s in cfg_symbols.split(",") if s.strip()]
     elif cfg_symbol:
         symbols = [cfg_symbol]
