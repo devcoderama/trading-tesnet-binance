@@ -4,9 +4,24 @@ from config.settings import settings
 PROVIDERS = [p.strip() for p in (settings.AI_PROVIDERS or "gemini").split(",") if p.strip()]
 
 def _key(provider):
-    env = (provider + "_API_KEY").upper()
     import os
+    try:
+        from utils.db import get_config
+        dbk = get_config(f"AI_TOKEN_{provider.upper()}")
+        if dbk:
+            return dbk
+    except Exception:
+        pass
+    env = (provider + "_API_KEY").upper()
     return os.getenv(env, settings.AI_API_KEY)
+
+def save_ai_token(provider, token):
+    from utils.db import set_config
+    set_config(f"AI_TOKEN_{provider.upper()}", token)
+
+def delete_ai_token(provider):
+    from utils.db import set_config
+    set_config(f"AI_TOKEN_{provider.upper()}", "")
 
 def _openai_compat(provider, base, model, prompt, key):
     data = json.dumps({
