@@ -17,6 +17,8 @@ class Settings:
     API_KEY = os.getenv("BINANCE_API_KEY", "")
     API_SECRET = os.getenv("BINANCE_API_SECRET", "")
     TESTNET = os.getenv("TESTNET", "true").lower() == "true"
+    BOT_TYPE = os.getenv("BOT_TYPE", "Testnet Spot Bot")
+    MAX_SYMBOLS = int(os.getenv("MAX_SYMBOLS", "3"))
     SYMBOL = os.getenv("SYMBOL", "")
     SYMBOLS = os.getenv("SYMBOLS", "")  # comma separated
     RISK_LEVEL = os.getenv("RISK_LEVEL", "MEDIUM").upper()

@@ -52,10 +52,10 @@ def main():
     elif settings.SYMBOL:
         symbols = [settings.SYMBOL]
     else:
-        symbols = auto_symbols(discovery, 3)
+        symbols = auto_symbols(discovery, settings.MAX_SYMBOLS)
 
     info = {
-        "Bot Type": "Testnet Spot Bot",
+        "Bot Type": settings.BOT_TYPE,
         "Exchange": "Binance",
         "Symbols": ", ".join(symbols),
         "Profit Currency": settings.QUOTE_ASSET,
