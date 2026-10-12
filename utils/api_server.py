@@ -1,7 +1,7 @@
 import json, os, threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from config.settings import settings
-from utils.db import get_config, set_config
+from utils.db import get_config, set_config, load_trades
 
 class Handler(BaseHTTPRequestHandler):
     def _auth_ok(self):
@@ -45,6 +45,10 @@ class Handler(BaseHTTPRequestHandler):
         if p == "/api/ai/providers":
             provs = [x.strip() for x in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if x.strip()]
             self._json(200, {"providers": provs})
+            return
+        if p == "/api/history":
+            rows = load_trades()[-20:]
+            self._json(200, {"history": rows})
             return
         if p == "/api/status":
             status = {

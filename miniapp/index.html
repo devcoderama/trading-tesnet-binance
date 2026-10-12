@@ -88,7 +88,15 @@
       </div>
     </section>
 
-    <footer class="text-xs text-slate-500 mt-6">
+    <section class="bg-slate-900/70 rounded-2xl p-4 border border-slate-800 mb-4">
+      <h2 class="font-semibold mb-3 text-emerald-400">Trade History</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead><tr class="text-slate-400"><th>Time</th><th>Side</th><th>Symbol</th><th>Qty</th><th>Status</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
       MiniApp UI. Integrasi penuh dengan bot membutuhkan endpoint API/backend (opsional).
     </footer>
   </div>
@@ -124,9 +132,12 @@ async function aiDelete(){ const p=document.getElementById('provider').value.tri
 async function setAiMode(){ const v=document.getElementById('aiModeSel').value; await api('/api/config','POST',{key:'AI_MODE',value:v}); document.getElementById('aiMode').innerText=v; msg('AI mode: '+v); }
 async function botStart(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'false'}); msg('Bot resumed.'); }
 async function botStop(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'true'}); msg('Bot paused.'); }
+async function loadHistory(){ const r=await api('/api/history'); const rows=r.history||[]; const tb=document.getElementById('historyBody'); if(tb) tb.innerHTML=rows.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${x[4]}</td></tr>`).join(''); }
 loadStatus();
 loadProviders();
+loadHistory();
 setInterval(loadStatus,5000);
+setInterval(loadHistory,10000);
 </script>
 </body>
 </html>
