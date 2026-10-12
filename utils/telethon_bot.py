@@ -44,7 +44,7 @@ async def _run():
         )
         await event.respond(text, parse_mode='html', buttons=[
             [Button.inline("Status", b"status"), Button.inline("Pause", b"pause")],
-            [Button.inline("Resume", b"resume"), Button.inline("Back", b"back")],
+            [Button.inline("Resume", b"resume")],
         ])
 
     @client.on(events.CallbackQuery)
