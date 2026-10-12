@@ -59,6 +59,23 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(body)
         except Exception:
             data = {}
+        if self.path == "/api/ai/validate":
+            provider = str(data.get("provider", "")).strip().lower()
+            token = str(data.get("token", "")).strip()
+            if not provider or not token:
+                self._json(400, {"ok": False, "error": "missing fields"})
+                return
+            import os
+            os.environ[f"{provider.upper()}_API_KEY"] = token
+            from utils.ai import _call
+            try:
+                _call(provider, "Reply with one word: HOLD")
+                from utils.ai import save_ai_token
+                save_ai_token(provider, token)
+                self._json(200, {"ok": True})
+            except Exception as e:
+                self._json(400, {"ok": False, "error": str(e)})
+            return
         if self.path == "/api/config":
             key = str(data.get("key", ""))
             val = str(data.get("value", ""))
