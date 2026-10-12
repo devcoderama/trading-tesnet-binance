@@ -18,8 +18,18 @@ class RiskManager:
             idx = n // 2
         return cands[idx]
 
-    def position_size(self, balance, price):
-        qty = min(balance * 0.01 / price, self.max_position)
+    def position_size(self, balance, price, risk_level=None):
+        if risk_level is None:
+            try:
+                from utils.db import get_config
+                risk_level = get_config("RISK_LEVEL", "MEDIUM")
+            except Exception:
+                risk_level = "MEDIUM"
+        risk_level = str(risk_level).upper()
+        pct = 0.005 if risk_level == "LOW" else 0.02 if risk_level == "HIGH" else 0.01
+        qty = balance * pct / price
+        if self.max_position and self.max_position > 0:
+            qty = min(qty, self.max_position)
         return round(qty, 6)
 
     def stop_loss_price(self, entry, pct=0.02):
