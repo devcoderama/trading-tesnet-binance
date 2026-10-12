@@ -114,6 +114,7 @@ async function setAiMode(){ const v=document.getElementById('aiModeSel').value; 
 async function botStart(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'false'}); msg('Bot resumed.'); }
 async function botStop(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'true'}); msg('Bot paused.'); }
 loadStatus();
+setInterval(loadStatus,5000);
 </script>
 </body>
 </html>
