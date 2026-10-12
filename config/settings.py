@@ -19,6 +19,12 @@ class Settings:
     TESTNET = os.getenv("TESTNET", "true").lower() == "true"
     BOT_TYPE = os.getenv("BOT_TYPE", "Testnet Spot Bot")
     MAX_SYMBOLS = int(os.getenv("MAX_SYMBOLS", "3"))
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_USER_ID = os.getenv("TELEGRAM_USER_ID", "")
+    TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
+    USE_AI = os.getenv("USE_AI", "false").lower() == "true"
+    AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini").lower()
+    AI_API_KEY = os.getenv("AI_API_KEY", "")
     SYMBOL = os.getenv("SYMBOL", "")
     SYMBOLS = os.getenv("SYMBOLS", "")  # comma separated
     RISK_LEVEL = os.getenv("RISK_LEVEL", "MEDIUM").upper()

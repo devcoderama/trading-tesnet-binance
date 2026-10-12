@@ -1,4 +1,6 @@
-import json, os, time
+import time, os
+from utils.db import init_db, save_trade, load_trades
+from utils.telegram import send_telegram
 from datetime import datetime
 from config.settings import settings
 from exchange.binance_client import BinanceClient
@@ -67,7 +69,8 @@ def main():
     }
 
     last_orders = {s: {"buy": "-", "sell": "-"} for s in symbols}
-    history = load_history()
+    history = load_trades()
+    init_db()
     prev_bal = None
 
     while True:
@@ -84,8 +87,10 @@ def main():
                     if qty > 0:
                         res = executor.market_buy(symbol, qty)
                         last_orders[symbol]["buy"] = res.get("orderId", "dry")
-                        history.append([datetime.now().strftime("%H:%M:%S"), "BUY", symbol, qty, res.get("status")])
-                        save_history(history)
+                        row = [datetime.now().strftime("%H:%M:%S"), "BUY", symbol, qty, res.get("status"), price]
+                        history.append(row[:5])
+                        save_trade(row)
+                        send_telegram(f"BUY {symbol} qty={qty} price={price}")
                 elif sig == "SELL":
                     base = symbol.replace(settings.QUOTE_ASSET, "")
                     bal = float(client.get_asset_balance(asset=base)["free"])
@@ -93,8 +98,10 @@ def main():
                         qty = round(bal, 6)
                         res = executor.market_sell(symbol, qty)
                         last_orders[symbol]["sell"] = res.get("orderId", "dry")
-                        history.append([datetime.now().strftime("%H:%M:%S"), "SELL", symbol, qty, res.get("status")])
-                        save_history(history)
+                        row = [datetime.now().strftime("%H:%M:%S"), "SELL", symbol, qty, res.get("status"), price]
+                        history.append(row[:5])
+                        save_trade(row)
+                        send_telegram(f"SELL {symbol} qty={qty} price={price}")
                 rows.append({
                     "symbol": symbol,
                     "interval": settings.INTERVAL,
