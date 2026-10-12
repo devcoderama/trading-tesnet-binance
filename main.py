@@ -39,30 +39,10 @@ def main():
     executor = Executor(client)
     discovery = SymbolDiscovery(client)
 
-    cfg_symbols = get_config("SYMBOLS", settings.SYMBOLS) or ""
-    cfg_symbol = get_config("SYMBOL", settings.SYMBOL) or ""
-    cfg_interval = get_config("INTERVAL", settings.INTERVAL) or settings.INTERVAL
-
-    cfg_mode = get_config("SYMBOL_MODE", "auto") or "auto"
-
-    if cfg_mode == "random":
-        max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
-        symbols = auto_symbols(discovery, max_sym)
-    elif cfg_symbols:
-        symbols = [s.strip() for s in cfg_symbols.split(",") if s.strip()]
-    elif cfg_symbol:
-        symbols = [cfg_symbol]
-    else:
-        max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
-        symbols = auto_symbols(discovery, max_sym)
-
     info = {
         "Bot Type": settings.BOT_TYPE,
         "Exchange": "Binance",
-        "Symbols": ", ".join(symbols),
         "Profit Currency": settings.QUOTE_ASSET,
-        "Risk Level": get_config("RISK_LEVEL", settings.RISK_LEVEL),
-        "Interval": cfg_interval,
         "Dry Run": settings.DRY_RUN,
         "Testnet": settings.TESTNET,
         "Indicators": "AI multi-provider" if settings.USE_AI else "SMA crossover (fast/slow)",
@@ -70,8 +50,7 @@ def main():
         "AI Providers": settings.AI_PROVIDERS if settings.USE_AI else "-",
     }
 
-    info["Balance"] = float(client.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
-    last_orders = {s: {"buy": "-", "sell": "-"} for s in symbols}
+    last_orders = {}
     history = load_trades()
     prev_bal = None
 
@@ -79,6 +58,23 @@ def main():
         if get_config("BOT_PAUSED", "false").lower() == "true":
             time.sleep(5)
             continue
+        cfg_symbols = get_config("SYMBOLS", settings.SYMBOLS) or ""
+        cfg_symbol = get_config("SYMBOL", settings.SYMBOL) or ""
+        cfg_interval = get_config("INTERVAL", settings.INTERVAL) or settings.INTERVAL
+        cfg_mode = get_config("SYMBOL_MODE", "auto") or "auto"
+        if cfg_mode == "random":
+            max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
+            symbols = auto_symbols(discovery, max_sym)
+        elif cfg_symbols:
+            symbols = [s.strip() for s in cfg_symbols.split(",") if s.strip()]
+        elif cfg_symbol:
+            symbols = [cfg_symbol]
+        else:
+            max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
+            symbols = auto_symbols(discovery, max_sym)
+        for s in symbols:
+            if s not in last_orders:
+                last_orders[s] = {"buy": "-", "sell": "-"}
         rows = []
         for symbol in symbols:
             try:
@@ -125,6 +121,10 @@ def main():
                 prev_bal = cur_bal
             except Exception as e:
                 logger.error(f"{symbol}: {e}")
+        info["Symbols"] = ", ".join(symbols)
+        info["Interval"] = cfg_interval
+        info["Risk Level"] = get_config("RISK_LEVEL", settings.RISK_LEVEL)
+        info["Balance"] = float(client.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
         render_dashboard(info, rows, history)
         time.sleep(10)
 
