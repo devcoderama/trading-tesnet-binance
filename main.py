@@ -39,10 +39,14 @@ def main():
     executor = Executor(client)
     discovery = SymbolDiscovery(client)
 
-    if settings.SYMBOLS:
-        symbols = [s.strip() for s in settings.SYMBOLS.split(",") if s.strip()]
-    elif settings.SYMBOL:
-        symbols = [settings.SYMBOL]
+    cfg_symbols = get_config("SYMBOLS", settings.SYMBOLS) or ""
+    cfg_symbol = get_config("SYMBOL", settings.SYMBOL) or ""
+    cfg_interval = get_config("INTERVAL", settings.INTERVAL) or settings.INTERVAL
+
+    if cfg_symbols:
+        symbols = [s.strip() for s in cfg_symbols.split(",") if s.strip()]
+    elif cfg_symbol:
+        symbols = [cfg_symbol]
     else:
         max_sym = int(get_config("MAX_SYMBOLS", settings.MAX_SYMBOLS) or settings.MAX_SYMBOLS)
         symbols = auto_symbols(discovery, max_sym)
@@ -53,7 +57,7 @@ def main():
         "Symbols": ", ".join(symbols),
         "Profit Currency": settings.QUOTE_ASSET,
         "Risk Level": get_config("RISK_LEVEL", settings.RISK_LEVEL),
-        "Interval": settings.INTERVAL,
+        "Interval": cfg_interval,
         "Dry Run": settings.DRY_RUN,
         "Testnet": settings.TESTNET,
         "Indicators": "AI multi-provider" if settings.USE_AI else "SMA crossover (fast/slow)",
@@ -73,7 +77,7 @@ def main():
         rows = []
         for symbol in symbols:
             try:
-                closes = market.get_closes(symbol, settings.INTERVAL, limit=50)
+                closes = market.get_closes(symbol, cfg_interval, limit=50)
                 if settings.USE_AI:
                     sig, ai_used = get_ai_signal(closes, symbol)
                 else:
@@ -104,7 +108,7 @@ def main():
                         send_telegram(f"SELL {symbol} qty={qty} price={price} via {ai_used}")
                 rows.append({
                     "symbol": symbol,
-                    "interval": settings.INTERVAL,
+                    "interval": cfg_interval,
                     "indicators": ind,
                     "price": price,
                     "signal": sig,
