@@ -145,7 +145,8 @@ loadStatus();
 loadProviders();
 loadHistory();
 loadAudit();
-setInterval(loadStatus,5000);
+const es=new EventSource('/api/events'+(new URLSearchParams(location.search).get('t')?('?t='+new URLSearchParams(location.search).get('t')):''));
+es.onmessage=(e)=>{try{const s=JSON.parse(e.data); document.getElementById('risk').innerText=s.risk||'-'; document.getElementById('interval').innerText=s.interval||'-'; document.getElementById('symbols').innerText=s.symbols||'-'; document.getElementById('symbolMode').innerText=s.symbol_mode||'-'; document.getElementById('aiMode').innerText=s.ai_mode||'-'; document.getElementById('statusMsg').innerText=s.paused==='true'?'Bot paused':'Bot running';}catch(_){}};
 setInterval(loadHistory,10000);
 setInterval(loadAudit,15000);
 </script>

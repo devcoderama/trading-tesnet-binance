@@ -61,6 +61,21 @@ class Handler(BaseHTTPRequestHandler):
             rows = load_trades()[-20:]
             self._json(200, {"history": rows})
             return
+        if p == "/api/events":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "keep-alive")
+            self.end_headers()
+            import time
+            try:
+                while True:
+                    status = {"risk": get_config("RISK_LEVEL","MEDIUM"), "interval": get_config("INTERVAL", settings.INTERVAL), "symbols": get_config("SYMBOLS", settings.SYMBOLS), "paused": get_config("BOT_PAUSED","false")}
+                    self.wfile.write(f"data: {json.dumps(status)}\n\n".encode())
+                    self.wfile.flush()
+                    time.sleep(5)
+            except Exception:
+                pass
         if p == "/api/status":
             status = {
                 "bot_type": settings.BOT_TYPE,
