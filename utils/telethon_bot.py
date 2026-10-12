@@ -78,9 +78,9 @@ async def _run():
             _pending_ai_delete.add(event.sender_id)
             await event.edit("Kirim provider untuk dihapus: gemini (hanya nama provider)", buttons=[[Button.inline("Back", b"menu_ai")]])
             return
-        if data == "ai_save":
+        if data == "ai_edit":
             _pending_ai_users.add(event.sender_id)
-            await event.edit("Kirim token dengan format: <provider> <token>\nContoh: gemini ABC123", buttons=[[Button.inline("Back", b"menu_ai")]])
+            await event.edit("Kirim token dengan format: <provider> <token>\nContoh: gemini ABC123 (edit/overwrite)", buttons=[[Button.inline("Back", b"menu_ai")]])
             return
         if data == "ai_mode":
             from utils.db import get_config, set_config
