@@ -43,7 +43,7 @@ def main():
                     qty = round(bal, 6)
                     res = executor.market_sell(symbol, qty)
                     history.append([datetime.now().strftime("%H:%M:%S"), "SELL", symbol, qty, res.get("status")])
-            render_dashboard(symbol, settings.RISK_LEVEL, price, sig, cur_bal, prev_bal,
+            render_dashboard(symbol, settings.RISK_LEVEL, settings.INTERVAL, price, sig, cur_bal, prev_bal,
                              settings.DRY_RUN, settings.TESTNET, history)
             prev_bal = cur_bal
             time.sleep(10)

@@ -5,11 +5,12 @@ from rich import box
 
 console = Console()
 
-def render_dashboard(symbol, risk_level, price, signal, cur_bal, prev_bal, dry_run, testnet, history):
+def render_dashboard(symbol, risk_level, interval, price, signal, cur_bal, prev_bal, dry_run, testnet, history):
     t = Table(title="Bot Status", box=box.ROUNDED)
     t.add_column("Key", style="cyan")
     t.add_column("Value", style="green")
     t.add_row("Symbol", symbol)
+    t.add_row("Interval", interval)
     t.add_row("Risk Level", risk_level)
     t.add_row("Price", str(price))
     t.add_row("Signal", signal)
