@@ -8,6 +8,9 @@ except Exception:
 
 _pending_ai_users = set()
 _pending_ai_delete = set()
+_pending_tf = set()
+_pending_syms = set()
+_pending_risk = set()
 
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
@@ -52,13 +55,16 @@ async def _run():
     async def cb(event):
         data = event.data.decode()
         if data == "trading_timeframe":
-            await event.edit("Set Timeframe: (edit .env INTERVAL). Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            _pending_tf.add(event.sender_id)
+            await event.edit("Kirim timeframe (contoh: 1m, 5m, 15m)", buttons=[[Button.inline("Back", b"menu_trading")]])
             return
         if data == "trading_symbols":
-            await event.edit("Symbols manage: set in .env SYMBOL/SYMBOLS or use auto. Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            _pending_syms.add(event.sender_id)
+            await event.edit("Kirim symbol(s): single/multi/arak. Contoh: BTCUSDT,ETHUSDT", buttons=[[Button.inline("Back", b"menu_trading")]])
             return
         if data == "trading_risk":
-            await event.edit("Set Risk: set RISK_LEVEL in settings/db. Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            _pending_risk.add(event.sender_id)
+            await event.edit("Kirim risk level: LOW/MEDIUM/HIGH", buttons=[[Button.inline("Back", b"menu_trading")]])
             return
         if data == "menu_trading":
             await event.edit("Trading Menu", buttons=trading_menu_buttons())
@@ -105,6 +111,24 @@ async def _run():
 
     @client.on(events.NewMessage)
     async def _capture_token(event):
+        if event.sender_id in _pending_tf:
+            from utils.db import set_config
+            set_config("INTERVAL", (event.message.text or "").strip())
+            _pending_tf.discard(event.sender_id)
+            await event.reply("INTERVAL updated.")
+            return
+        if event.sender_id in _pending_syms:
+            from utils.db import set_config
+            set_config("SYMBOLS", (event.message.text or "").strip())
+            _pending_syms.discard(event.sender_id)
+            await event.reply("SYMBOLS updated.")
+            return
+        if event.sender_id in _pending_risk:
+            from utils.db import set_config
+            set_config("RISK_LEVEL", (event.message.text or "").strip().upper())
+            _pending_risk.discard(event.sender_id)
+            await event.reply("RISK updated.")
+            return
         if event.sender_id in _pending_ai_delete:
             provider = (event.message.text or "").strip().lower()
             from utils.ai import delete_ai_token
