@@ -71,10 +71,21 @@ python main.py
 - Default `DRY_RUN=true`: tidak kirim order nyata. Set `DRY_RUN=false` untuk testnet.
 - Log tersimpan di `logs/bot.log`.
 
-## Safety
-- Default DRY_RUN=true. Never disable dry run on mainnet.
+## Telegram Bot (optional)
+Untuk menggunakan Telethon (inline button, navigasi responsif), buat API ID dan API Hash di https://my.telegram.org:
+1. Login dengan nomor telepon Telegram Anda.
+2. Buka "API development tools".
+3. Isi app title & short name, lalu "Create application".
+4. Salin `api_id` dan `api_hash` ke `.env` sebagai `TELEGRAM_API_ID` dan `TELEGRAM_API_HASH`.
+5. Isi `TELEGRAM_BOT_TOKEN` dari @BotFather, serta `TELEGRAM_CHANNEL_ID` (target notifikasi).
 - Bot is for educational purposes.
 
-## License
-MIT
+## Telegram Usage
+- `/start` opens main menu with inline buttons.
+- Buttons: Status, Pause, Resume, Back.
+- Notifications BUY/SELL sent only to `TELEGRAM_CHANNEL_ID`.
+- If Telethon credentials present, use inline buttons; else basic text polling.
+
+## Safety
+- Default `DRY_RUN=true`. Never disable dry run on mainnet without testnet validation.
 ```
