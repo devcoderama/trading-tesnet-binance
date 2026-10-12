@@ -82,6 +82,13 @@ async def _run():
             _pending_ai_users.add(event.sender_id)
             await event.edit("Kirim token dengan format: <provider> <token>\nContoh: gemini ABC123", buttons=[[Button.inline("Back", b"menu_ai")]])
             return
+        if data == "ai_mode":
+            from utils.db import get_config, set_config
+            cur = get_config("AI_MODE", "multi")
+            nxt = "single" if cur == "multi" else "multi"
+            set_config("AI_MODE", nxt)
+            await event.edit(f"AI mode set to {nxt}", buttons=[[Button.inline("Back", b"menu_ai")]])
+            return
         if data == "menu_status":
             await event.edit("Status Bot", buttons=[[Button.inline("Start", b"resume"), Button.inline("Stop", b"pause"), Button.inline("Back", b"menu_back")]])
             return
