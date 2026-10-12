@@ -153,10 +153,23 @@ async def _run():
             await event.reply("Format salah. Gunakan: <provider> <token>")
             return
         provider, token = parts[0].strip().lower(), parts[1].strip()
-        from utils.ai import save_ai_token
+        from utils.ai import save_ai_token, _call
+        try:
+            _call.__wrapped__ if hasattr(_call, "__wrapped__") else None
+        except Exception:
+            pass
+        try:
+            old = None
+            from config.settings import settings
+            import os
+            os.environ[f"{provider.upper()}_API_KEY"] = token
+            _call(provider, "Reply with one word: HOLD")
+        except Exception as e:
+            await event.reply(f"Validasi gagal: {e}")
+            return
         save_ai_token(provider, token)
         _pending_ai_users.discard(event.sender_id)
-        await event.reply(f"Token {provider} tersimpan.")
+        await event.reply(f"Token {provider} divalidasi & tersimpan.")
 
     await client.run_until_disconnected()
 
