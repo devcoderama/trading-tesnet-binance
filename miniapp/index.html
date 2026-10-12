@@ -15,6 +15,13 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div class="max-w-4xl mx-auto p-4 md:p-6">
+  <div id="loginBox" class="max-w-sm mx-auto mt-10 bg-slate-900/80 rounded-2xl p-5 border border-slate-800">
+    <h2 class="text-lg font-semibold mb-3">Login MiniApp</h2>
+    <input id="loginUser" placeholder="Username" class="w-full bg-slate-800 rounded-xl px-3 py-2 mb-2"/>
+    <input id="loginPass" type="password" placeholder="Password" class="w-full bg-slate-800 rounded-xl px-3 py-2 mb-3"/>
+    <button onclick="doLogin()" class="w-full bg-sky-600 hover:bg-sky-500 rounded-xl py-2">Login</button>
+    <div id="loginMsg" class="text-xs text-slate-400 mt-2"></div>
+  </div>
     <header class="mb-6">
       <h1 class="text-2xl md:text-3xl font-bold">Binance Bot MiniApp</h1>
       <p class="text-slate-400 text-sm">Mirror menu Telegram: Trading, AI, Status Bot</p>
@@ -137,6 +144,7 @@ async function removeProvider(){ const name=document.getElementById('newProvider
   document.getElementById('statusMsg').innerText=s.paused==='true'?'Bot paused':'Bot running';
 }
 function toggleTheme(){ const d=document.documentElement; const next=d.classList.contains('dark')?'light':'dark'; d.classList.remove('dark','light'); d.classList.add(next); localStorage.setItem('theme',next); if(next==='light'){ document.body.classList.remove('bg-slate-950','text-slate-100'); document.body.classList.add('bg-slate-50','text-slate-900'); } else { document.body.classList.remove('bg-slate-50','text-slate-900'); document.body.classList.add('bg-slate-950','text-slate-100'); } }
+async function doLogin(){ const u=document.getElementById('loginUser').value.trim(); const p=document.getElementById('loginPass').value; const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:u,password:p})}); const j=await r.json(); if(j.ok){ document.getElementById('loginBox').classList.add('hidden'); document.getElementById('loginMsg').innerText='Login success.'; loadStatus(); } else { document.getElementById('loginMsg').innerText=j.error||'login failed'; } }
 function msg(t){ const el=document.getElementById('statusMsg'); if(el) el.innerText=t; const toast=document.getElementById('toast'); if(toast){ toast.innerText=t; toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'),2500);} }
 async function setTf(){ const v=document.getElementById('tf').value.trim(); if(!v) return; await api('/api/config','POST',{key:'INTERVAL',value:v}); document.getElementById('interval').innerText=v; msg('Timeframe set: '+v); }
 async function setSyms(){ const v=document.getElementById('syms').value.trim(); if(!v) return; await api('/api/config','POST',{key:'SYMBOLS',value:v}); document.getElementById('symbols').innerText=v; msg('Symbols set.'); }
