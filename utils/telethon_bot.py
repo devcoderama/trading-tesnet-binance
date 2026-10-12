@@ -65,7 +65,14 @@ async def _run():
             await event.edit("Main Menu", buttons=main_menu_buttons())
             return
         if data == "menu_ai":
-            await event.edit("AI Menu (coming soon)", buttons=[[Button.inline("Back", b"menu_back")]])
+            await event.edit("AI Menu", buttons=[
+                [Button.inline("Save Token", b"ai_save"), Button.inline("Edit", b"ai_edit")],
+                [Button.inline("Add", b"ai_add"), Button.inline("Delete", b"ai_delete")],
+                [Button.inline("Single/Multi", b"ai_mode"), Button.inline("Back", b"menu_back")],
+            ])
+            return
+        if data.startswith("ai_"):
+            await event.edit(f"AI action {data} (storage pending)", buttons=[[Button.inline("Back", b"menu_ai")]])
             return
         if data == "menu_status":
             await event.edit("Status Bot", buttons=[[Button.inline("Start", b"resume"), Button.inline("Stop", b"pause"), Button.inline("Back", b"menu_back")]])
