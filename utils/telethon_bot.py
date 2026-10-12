@@ -12,6 +12,7 @@ _pending_tf = set()
 _pending_syms = set()
 _pending_risk = set()
 _pending_mode = set()
+_pending_miniuser = set()
 
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
@@ -125,6 +126,17 @@ async def _run():
             set_config("SYMBOL_MODE", (event.message.text or "").strip().lower())
             _pending_mode.discard(event.sender_id)
             await event.reply("SYMBOL_MODE updated.")
+        if event.sender_id in _pending_miniuser:
+            parts = (event.message.text or "").split(maxsplit=1)
+            if len(parts) != 2:
+                await event.reply("Format: username password")
+                return
+            u,pw = parts[0].strip(), parts[1].strip()
+            from utils.db import create_miniapp_user
+            create_miniapp_user(u,pw)
+            _pending_miniuser.discard(event.sender_id)
+            await event.reply(f"User {u} dibuat/diupdate.")
+            return
         if event.sender_id in _pending_tf:
             from utils.db import set_config
             set_config("INTERVAL", (event.message.text or "").strip())
@@ -174,6 +186,11 @@ async def _run():
         save_ai_token(provider, token)
         _pending_ai_users.discard(event.sender_id)
         await event.reply(f"Token {provider} divalidasi & tersimpan.")
+
+    @client.on(events.NewMessage(pattern="/mkuser"))
+    async def _mkuser(event):
+        _pending_miniuser.add(event.sender_id)
+        await event.reply("Kirim: username password")
 
     await client.run_until_disconnected()
 

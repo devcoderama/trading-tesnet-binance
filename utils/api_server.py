@@ -118,18 +118,25 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             data = {}
         if self.path == "/api/login":
+            username = str(data.get("username", "")).strip()
             pwd = str(data.get("password", ""))
             expected = os.getenv("MINIAPP_TOKEN")
-            if expected and pwd == expected:
+            ok = False
+            if username:
+                from utils.db import verify_miniapp_user
+                ok = verify_miniapp_user(username, pwd)
+            elif expected and pwd == expected:
+                ok = True
+            if ok:
                 import hmac, hashlib
-                val = hmac.new(expected.encode(), b"session", hashlib.sha256).hexdigest()
+                val = hmac.new((expected or pwd).encode(), b"session", hashlib.sha256).hexdigest()
                 self.send_response(200)
                 self.send_header("Set-Cookie", f"session={val}; Path=/; HttpOnly")
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"ok": True}).encode())
             else:
-                self._json(401, {"ok": False, "error": "invalid password"})
+                self._json(401, {"ok": False, "error": "invalid credentials"})
             return
         if self.path == "/api/ai/validate":
             provider = str(data.get("provider", "")).strip().lower()

@@ -119,8 +119,9 @@ async function api(path, method="GET", body=null){
   if(body) opts.body=JSON.stringify(body);
   let r=await fetch(url,opts);
   if(r.status===401){
+    const username=prompt('Username miniapp:');
     const pwd=prompt('Password miniapp:');
-    if(pwd){ await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({password:pwd})}); r=await fetch(url,opts); }
+    if(username && pwd){ await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:username,password:pwd})}); r=await fetch(url,opts); }
   }
   return r.json();
 }

@@ -20,6 +20,10 @@ def init_db():
         action TEXT,
         detail TEXT
     )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS miniapp_users (
+        username TEXT PRIMARY KEY,
+        password_hash TEXT
+    )""")
     # remove telegram secrets from DB (stored in .env)
     for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_USER_ID", "TELEGRAM_CHANNEL_ID"):
         cur.execute("DELETE FROM config WHERE key=?", (k,))
@@ -97,3 +101,35 @@ def load_audit(limit=20):
     rows = cur.fetchall()
     conn.close()
     return [list(r) for r in rows]
+
+
+import hashlib
+
+def _hash_pw(pw):
+    return hashlib.sha256(pw.encode()).hexdigest()
+
+def create_miniapp_user(username, password):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO miniapp_users (username,password_hash) VALUES (?,?) ON CONFLICT(username) DO UPDATE SET password_hash=excluded.password_hash", (username, _hash_pw(password)))
+    conn.commit()
+    conn.close()
+
+def verify_miniapp_user(username, password):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT password_hash FROM miniapp_users WHERE username=?", (username,))
+    r = cur.fetchone()
+    conn.close()
+    return bool(r and r[0] == _hash_pw(password))
+
+def list_miniapp_users():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT username FROM miniapp_users")
+    rows = [r[0] for r in cur.fetchall()]
+    conn.close()
+    return rows
