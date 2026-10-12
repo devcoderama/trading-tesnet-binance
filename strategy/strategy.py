@@ -1,21 +1,23 @@
-import pandas as pd
-
 class SimpleStrategy:
-    """SMA crossover strategy: fast SMA crosses slow SMA."""
+    """SMA crossover strategy using plain Python lists."""
     def __init__(self, fast=9, slow=21):
         self.fast = fast
         self.slow = slow
 
-    def signal(self, df: pd.DataFrame):
-        if len(df) < self.slow + 1:
+    def _sma(self, values, n):
+        if len(values) < n:
+            return None
+        return sum(values[-n:]) / n
+
+    def signal(self, closes):
+        if len(closes) < self.slow + 1:
             return "HOLD"
-        df = df.copy()
-        df["fast"] = df["close"].rolling(self.fast).mean()
-        df["slow"] = df["close"].rolling(self.slow).mean()
-        prev_fast = df["fast"].iloc[-2]
-        prev_slow = df["slow"].iloc[-2]
-        curr_fast = df["fast"].iloc[-1]
-        curr_slow = df["slow"].iloc[-1]
+        prev_fast = self._sma(closes[:-1], self.fast)
+        prev_slow = self._sma(closes[:-1], self.slow)
+        curr_fast = self._sma(closes, self.fast)
+        curr_slow = self._sma(closes, self.slow)
+        if None in (prev_fast, prev_slow, curr_fast, curr_slow):
+            return "HOLD"
         if prev_fast <= prev_slow and curr_fast > curr_slow:
             return "BUY"
         if prev_fast >= prev_slow and curr_fast < curr_slow:

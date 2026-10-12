@@ -27,8 +27,8 @@ def main():
     prev_bal = None
     while True:
         try:
-            df = market.get_klines(symbol, settings.INTERVAL, limit=50)
-            sig = strategy.signal(df)
+            closes = market.get_closes(symbol, settings.INTERVAL, limit=50)
+            sig = strategy.signal(closes)
             price = market.latest_price(symbol)
             cur_bal = float(client.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
             if sig == "BUY":
