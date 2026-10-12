@@ -6,6 +6,8 @@ try:
 except Exception:
     HAS_TELETHON = False
 
+_pending_ai_users = set()
+
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
     api_hash = os.getenv("TELEGRAM_API_HASH", "")
@@ -71,8 +73,9 @@ async def _run():
                 [Button.inline("Single/Multi", b"ai_mode"), Button.inline("Back", b"menu_back")],
             ])
             return
-        if data.startswith("ai_"):
-            await event.edit(f"AI action {data} (storage pending)", buttons=[[Button.inline("Back", b"menu_ai")]])
+        if data == "ai_save":
+            _pending_ai_users.add(event.sender_id)
+            await event.edit("Kirim token dengan format: <provider> <token>\nContoh: gemini ABC123", buttons=[[Button.inline("Back", b"menu_ai")]])
             return
         if data == "menu_status":
             await event.edit("Status Bot", buttons=[[Button.inline("Start", b"resume"), Button.inline("Stop", b"pause"), Button.inline("Back", b"menu_back")]])
@@ -87,6 +90,20 @@ async def _run():
             await event.answer("Resumed")
         elif data == "back":
             await event.edit("Main menu", buttons=[[Button.inline("Status", b"status")], [Button.inline("Pause", b"pause")], [Button.inline("Resume", b"resume")]])
+
+    @client.on(events.NewMessage)
+    async def _capture_token(event):
+        if event.sender_id not in _pending_ai_users:
+            return
+        parts = (event.message.text or "").split(maxsplit=1)
+        if len(parts) != 2:
+            await event.reply("Format salah. Gunakan: <provider> <token>")
+            return
+        provider, token = parts[0].strip().lower(), parts[1].strip()
+        from utils.ai import save_ai_token
+        save_ai_token(provider, token)
+        _pending_ai_users.discard(event.sender_id)
+        await event.reply(f"Token {provider} tersimpan.")
 
     await client.run_until_disconnected()
 
