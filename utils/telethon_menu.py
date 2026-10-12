@@ -2,10 +2,15 @@
 
 def main_menu_buttons():
     from telethon import Button
-    return [
+    import os
+    btns = [
         [Button.inline("Trading", b"menu_trading"), Button.inline("AI", b"menu_ai")],
         [Button.inline("Status Bot", b"menu_status")],
     ]
+    url = os.getenv("MINIAPP_URL")
+    if url:
+        btns.append([Button.web_app("Mini App", url)])
+    return btns
 
 def trading_menu_buttons():
     from telethon import Button
