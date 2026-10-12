@@ -18,6 +18,7 @@ class Settings:
     API_SECRET = os.getenv("BINANCE_API_SECRET", "")
     TESTNET = os.getenv("TESTNET", "true").lower() == "true"
     SYMBOL = os.getenv("SYMBOL", "")
+    SYMBOLS = os.getenv("SYMBOLS", "")  # comma separated
     RISK_LEVEL = os.getenv("RISK_LEVEL", "MEDIUM").upper()
     QUOTE_ASSET = os.getenv("QUOTE_ASSET", "USDT")
     INTERVAL = os.getenv("INTERVAL", "1m")

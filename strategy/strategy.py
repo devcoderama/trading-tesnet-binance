@@ -9,6 +9,12 @@ class SimpleStrategy:
             return None
         return sum(values[-n:]) / n
 
+    def indicators(self, closes):
+        return {
+            "sma_fast": self._sma(closes, self.fast),
+            "sma_slow": self._sma(closes, self.slow),
+        }
+
     def signal(self, closes):
         if len(closes) < self.slow + 1:
             return "HOLD"
