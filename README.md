@@ -86,6 +86,12 @@ Untuk menggunakan Telethon (inline button, navigasi responsif), buat API ID dan 
 - Notifications BUY/SELL sent only to `TELEGRAM_CHANNEL_ID`.
 - If Telethon credentials present, use inline buttons; else basic text polling.
 
-## Safety
-- Default `DRY_RUN=true`. Never disable dry run on mainnet without testnet validation.
+## Telethon Menu Usage
+- `/start` menampilkan menu utama (Trading, AI, Status Bot).
+- Trading: Timeframe, Symbols, Symbol Mode (single/multi/random), Risk. Setiap perubahan diset melalui input teks dan disimpan ke DB (hot-reload tiap loop).
+- AI: Save/Edit/Add token (format `<provider> <token>`), Delete provider, Single/Multi mode. Token divalidasi sebelum disimpan.
+- Status Bot: Start (resume) dan Stop (pause).
+
+## Health Check
+- `python -m compileall -q .` untuk memastikan tidak ada syntax error.
 ```
