@@ -6,7 +6,7 @@
   <title>Binance Bot MiniApp</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    const inTelegram = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+    const inTelegram = !!(window.Telegram && window.Telegram.WebApp);
     if(!inTelegram){
       document.documentElement.innerHTML = '<body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center"><div><h2>Access Denied</h2><p>Mini-app ini hanya dapat dibuka melalui Telegram Mini App.</p></div></body>';
       throw new Error('Not Telegram WebApp');
