@@ -61,6 +61,7 @@ def main():
         "AI Providers": settings.AI_PROVIDERS if settings.USE_AI else "-",
     }
 
+    info["Balance"] = float(client.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
     last_orders = {s: {"buy": "-", "sell": "-"} for s in symbols}
     history = load_trades()
     prev_bal = None
