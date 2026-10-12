@@ -1,0 +1,16 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Settings:
+    API_KEY = os.getenv("BINANCE_API_KEY", "")
+    API_SECRET = os.getenv("BINANCE_API_SECRET", "")
+    TESTNET = os.getenv("TESTNET", "true").lower() == "true"
+    SYMBOL = os.getenv("SYMBOL", "BTCUSDT")
+    INTERVAL = os.getenv("INTERVAL", "1m")
+    QUANTITY = float(os.getenv("QUANTITY", "0.001"))
+    DRY_RUN = os.getenv("DRY_RUN", "true").lower() == "true"
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+settings = Settings()
