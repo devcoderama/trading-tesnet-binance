@@ -15,6 +15,29 @@ def init_db():
         value TEXT
     )""")
     conn.commit()
+    # seed defaults
+    cur.execute("SELECT COUNT(*) FROM config")
+    if cur.fetchone()[0] == 0:
+        defaults = {
+            "MAX_SYMBOLS": os.getenv("MAX_SYMBOLS", "3"),
+            "TELEGRAM_BOT_TOKEN": os.getenv("TELEGRAM_BOT_TOKEN", ""),
+            "TELEGRAM_USER_ID": os.getenv("TELEGRAM_USER_ID", ""),
+            "TELEGRAM_CHANNEL_ID": os.getenv("TELEGRAM_CHANNEL_ID", ""),
+            "USE_AI": os.getenv("USE_AI", "false"),
+            "AI_PROVIDER": os.getenv("AI_PROVIDER", "gemini"),
+            "AI_API_KEY": os.getenv("AI_API_KEY", ""),
+            "SYMBOL": os.getenv("SYMBOL", ""),
+            "RISK_LEVEL": os.getenv("RISK_LEVEL", "MEDIUM"),
+            "QUOTE_ASSET": os.getenv("QUOTE_ASSET", "USDT"),
+            "INTERVAL": os.getenv("INTERVAL", "1m"),
+            "QUANTITY": os.getenv("QUANTITY", "0.001"),
+            "DRY_RUN": os.getenv("DRY_RUN", "true"),
+            "LOG_LEVEL": os.getenv("LOG_LEVEL", "INFO"),
+            "BOT_TYPE": os.getenv("BOT_TYPE", "Testnet Spot Bot"),
+        }
+        for k, v in defaults.items():
+            cur.execute("INSERT INTO config (key,value) VALUES (?,?)", (k, str(v)))
+        conn.commit()
     conn.close()
 
 def save_trade(row):
