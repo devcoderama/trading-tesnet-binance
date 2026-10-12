@@ -1,6 +1,7 @@
 import time, os
 from utils.db import init_db, save_trade, load_trades, get_config
 from utils.telegram import send_telegram, start_telegram_polling
+from utils.telethon_bot import start_telethon
 from datetime import datetime
 from config.settings import settings
 from exchange.binance_client import BinanceClient
@@ -29,7 +30,8 @@ def auto_symbols(discovery, n=3):
 
 def main():
     init_db()
-    start_telegram_polling()
+    if not start_telethon():
+        start_telegram_polling()
     client = BinanceClient().get_client()
     market = MarketData(client)
     strategy = SimpleStrategy()
