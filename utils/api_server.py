@@ -41,7 +41,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/api") and not self._auth_ok():
             self._json(401, {"ok": False, "error": "unauthorized"})
             return
-        if self.path == "/api/status":
+        p = self.path.split("?")[0]
+        if p == "/api/ai/providers":
+            provs = [x.strip() for x in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if x.strip()]
+            self._json(200, {"providers": provs})
+            return
+        if p == "/api/status":
             status = {
                 "bot_type": settings.BOT_TYPE,
                 "interval": get_config("INTERVAL", settings.INTERVAL),
@@ -98,6 +103,27 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, {"ok": True})
             except Exception as e:
                 self._json(400, {"ok": False, "error": str(e)})
+            return
+        if self.path == "/api/ai/providers":
+            provs = [p.strip() for p in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if p.strip()]
+            self._json(200, {"providers": provs})
+            return
+        if self.path == "/api/ai/providers/add":
+            name = str(data.get("name","")).strip().lower()
+            if not name:
+                self._json(400, {"ok": False, "error": "missing name"}); return
+            provs = [p.strip() for p in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if p.strip()]
+            if name not in provs:
+                provs.append(name)
+            set_config("AI_PROVIDERS", ",".join(provs))
+            self._json(200, {"ok": True, "providers": provs})
+            return
+        if self.path == "/api/ai/providers/remove":
+            name = str(data.get("name","")).strip().lower()
+            provs = [p.strip() for p in (get_config("AI_PROVIDERS", settings.AI_PROVIDERS) or "").split(",") if p.strip()]
+            provs = [p for p in provs if p != name]
+            set_config("AI_PROVIDERS", ",".join(provs))
+            self._json(200, {"ok": True, "providers": provs})
             return
         if self.path == "/api/config":
             key = str(data.get("key", ""))

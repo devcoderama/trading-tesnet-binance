@@ -65,7 +65,12 @@
             <button onclick="aiSave()" class="bg-violet-600 hover:bg-violet-500 rounded-xl py-2">Save/Add/Edit</button>
             <button onclick="aiDelete()" class="bg-rose-600 hover:bg-rose-500 rounded-xl py-2">Delete</button>
           </div>
-          <select id="aiModeSel" class="w-full bg-slate-800 rounded-xl px-3 py-2">
+          <input id="newProvider" placeholder="Add provider name (gemini, openai...)" class="w-full bg-slate-800 rounded-xl px-3 py-2"/>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="addProvider()" class="bg-violet-600 hover:bg-violet-500 rounded-xl py-2">Add Provider</button>
+            <button onclick="removeProvider()" class="bg-rose-600 hover:bg-rose-500 rounded-xl py-2">Remove Provider</button>
+          </div>
+          <div class="text-xs text-slate-400">Providers: <span id="providers">-</span></div>
             <option value="single">single</option>
             <option value="multi" selected>multi</option>
           </select>
@@ -98,7 +103,9 @@ async function api(path, method="GET", body=null){
   if(body) opts.body=JSON.stringify(body);
   const r=await fetch(url,opts); return r.json();
 }
-async function loadStatus(){
+async function loadProviders(){ const r=await api('/api/ai/providers'); document.getElementById('providers').innerText=(r.providers||[]).join(',')||'-'; }
+async function addProvider(){ const name=document.getElementById('newProvider').value.trim(); if(!name){msg('nama provider wajib');return;} const r=await api('/api/ai/providers/add','POST',{name}); if(r.ok){ msg('Provider added.'); await loadProviders(); } else msg(r.error||'gagal'); }
+async function removeProvider(){ const name=document.getElementById('newProvider').value.trim(); if(!name){msg('nama provider wajib');return;} const r=await api('/api/ai/providers/remove','POST',{name}); if(r.ok){ msg('Provider removed.'); await loadProviders(); } else msg(r.error||'gagal'); }
   const s=await api('/api/status');
   document.getElementById('risk').innerText=s.risk||'-';
   document.getElementById('interval').innerText=s.interval||'-';
@@ -118,6 +125,7 @@ async function setAiMode(){ const v=document.getElementById('aiModeSel').value; 
 async function botStart(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'false'}); msg('Bot resumed.'); }
 async function botStop(){ await api('/api/config','POST',{key:'BOT_PAUSED',value:'true'}); msg('Bot paused.'); }
 loadStatus();
+loadProviders();
 setInterval(loadStatus,5000);
 </script>
 </body>
