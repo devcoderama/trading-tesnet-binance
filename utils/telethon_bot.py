@@ -1,5 +1,4 @@
 import os
-from config.settings import settings
 
 try:
     from telethon import TelegramClient, events, Button
@@ -10,6 +9,7 @@ except Exception:
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
     api_hash = os.getenv("TELEGRAM_API_HASH", "")
+    from config.settings import settings
     if not api_id or not api_hash or not settings.TELEGRAM_BOT_TOKEN:
         return
     client = TelegramClient("hermes_bot", api_id, api_hash)
@@ -26,19 +26,19 @@ async def _run():
         uid = event.sender_id
         text = (
             "<blockquote>"
-            f"Bot Type: {settings.BOT_TYPE}<br>"
-            "Exchange: Binance<br>"
-            f"Symbols: {settings.SYMBOL or settings.SYMBOLS or '-'}<br>"
-            f"Profit Currency: {settings.QUOTE_ASSET}<br>"
-            f"Risk Level: {get_config('RISK_LEVEL', settings.RISK_LEVEL)}<br>"
-            f"Interval: {settings.INTERVAL}<br>"
-            f"Dry Run: {settings.DRY_RUN}<br>"
-            f"Testnet: {settings.TESTNET}<br>"
-            f"Indicators: {'AI multi-provider' if settings.USE_AI else 'SMA crossover'}<br>"
-            f"AI Mode: {'ON' if settings.USE_AI else 'OFF'}<br>"
-            f"AI Providers: {settings.AI_PROVIDERS if settings.USE_AI else '-'}<br>"
-            f"Telegram Username: @{uname}<br>"
-            f"Telegram UserID: {uid}<br>"
+            f"Bot Type: {settings.BOT_TYPE}\n"
+            "Exchange: Binance\n"
+            f"Symbols: {settings.SYMBOL or settings.SYMBOLS or '-'}\n"
+            f"Profit Currency: {settings.QUOTE_ASSET}\n"
+            f"Risk Level: {get_config('RISK_LEVEL', settings.RISK_LEVEL)}\n"
+            f"Interval: {settings.INTERVAL}\n"
+            f"Dry Run: {settings.DRY_RUN}\n"
+            f"Testnet: {settings.TESTNET}\n"
+            f"Indicators: {'AI multi-provider' if settings.USE_AI else 'SMA crossover'}\n"
+            f"AI Mode: {'ON' if settings.USE_AI else 'OFF'}\n"
+            f"AI Providers: {settings.AI_PROVIDERS if settings.USE_AI else '-'}\n"
+            f"Telegram Username: @{uname}\n"
+            f"Telegram UserID: {uid}\n"
             f"Balance: {balance} {settings.QUOTE_ASSET}"
             "</blockquote>"
         )
