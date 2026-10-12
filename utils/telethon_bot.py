@@ -7,6 +7,7 @@ except Exception:
     HAS_TELETHON = False
 
 _pending_ai_users = set()
+_pending_ai_delete = set()
 
 async def _run():
     api_id = int(os.getenv("TELEGRAM_API_ID", "0") or 0)
@@ -73,6 +74,10 @@ async def _run():
                 [Button.inline("Single/Multi", b"ai_mode"), Button.inline("Back", b"menu_back")],
             ])
             return
+        if data == "ai_delete":
+            _pending_ai_delete.add(event.sender_id)
+            await event.edit("Kirim provider untuk dihapus: gemini (hanya nama provider)", buttons=[[Button.inline("Back", b"menu_ai")]])
+            return
         if data == "ai_save":
             _pending_ai_users.add(event.sender_id)
             await event.edit("Kirim token dengan format: <provider> <token>\nContoh: gemini ABC123", buttons=[[Button.inline("Back", b"menu_ai")]])
@@ -93,6 +98,13 @@ async def _run():
 
     @client.on(events.NewMessage)
     async def _capture_token(event):
+        if event.sender_id in _pending_ai_delete:
+            provider = (event.message.text or "").strip().lower()
+            from utils.ai import delete_ai_token
+            delete_ai_token(provider)
+            _pending_ai_delete.discard(event.sender_id)
+            await event.reply(f"Token {provider} dihapus.")
+            return
         if event.sender_id not in _pending_ai_users:
             return
         parts = (event.message.text or "").split(maxsplit=1)
