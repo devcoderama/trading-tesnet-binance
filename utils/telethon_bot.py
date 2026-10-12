@@ -19,6 +19,7 @@ async def _run():
     async def handler(event):
         from config.settings import settings
         from exchange.binance_client import BinanceClient
+        from utils.telethon_menu import main_menu_buttons, trading_menu_buttons
         from utils.db import get_config
         cli = BinanceClient().get_client()
         balance = float(cli.get_asset_balance(asset=settings.QUOTE_ASSET)["free"])
@@ -42,17 +43,24 @@ async def _run():
             f"Balance: {balance} {settings.QUOTE_ASSET}"
             "</blockquote>"
         )
-        await event.respond(text, parse_mode='html', buttons=[
-            [Button.inline("Status", b"status"), Button.inline("Pause", b"pause")],
-            [Button.inline("Resume", b"resume")],
-        ])
+        await event.respond(text, parse_mode='html', buttons=main_menu_buttons())
 
     @client.on(events.CallbackQuery)
     async def cb(event):
         data = event.data.decode()
-        if data == "status":
-            from utils.db import get_config
-            await event.edit(f"Paused: {get_config('BOT_PAUSED','false')}\nRisk: {get_config('RISK_LEVEL','MEDIUM')}", buttons=[[Button.inline("Back", b"back")]])
+        if data == "menu_trading":
+            await event.edit("Trading Menu", buttons=trading_menu_buttons())
+            return
+        if data == "menu_back":
+            from utils.telethon_menu import main_menu_buttons
+            await event.edit("Main Menu", buttons=main_menu_buttons())
+            return
+        if data == "menu_ai":
+            await event.edit("AI Menu (coming soon)", buttons=[[Button.inline("Back", b"menu_back")]])
+            return
+        if data == "menu_status":
+            await event.edit("Status Bot", buttons=[[Button.inline("Start", b"resume"), Button.inline("Stop", b"pause"), Button.inline("Back", b"menu_back")]])
+            return
         elif data == "pause":
             from utils.db import set_config
             set_config("BOT_PAUSED", "true")
