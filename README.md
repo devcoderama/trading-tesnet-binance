@@ -33,27 +33,43 @@ trading-bot/
 └── README.md
 ```
 
-## Installation
+## RISK_LEVEL (pilih level risiko)
+- `LOW`    : pilih koin lebih "besar"/likuid (posisi indeks 25% dari daftar).
+- `MEDIUM` : default, pilih tengah daftar.
+- `HIGH`   : pilih koin lebih kecil/volatil (indeks 75%).
 
+Set di `.env` sebagai `RISK_LEVEL=LOW|MEDIUM|HIGH`. Jika `SYMBOL` diisi, level ini diabaikan.
+
+## Membuat API Key & Secret (Binance TESTNET)
+1. Buka https://testnet.binance.vision/ dan login (GitHub).
+2. Klik "Generate HMAC_SHA256 Key".
+3. Simpan API Key dan Secret Key (secret hanya ditampilkan sekali).
+4. Isi ke `.env`: `BINANCE_API_KEY=...`, `BINANCE_API_SECRET=...`.
+
+## Sistem Operasi yang Didukung
+- Linux, macOS, Windows (Python 3.10+). Disarankan Linux/macOS.
+
+## Instalasi
 ```bash
 git clone https://github.com/devcoderama/trading-tesnet-binance.git
 cd trading-tesnet-binance
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+# Linux/macOS:
+source .venv/bin/activate
+# Windows:
+# .venv\\Scripts\\activate
 pip install -r requirements.txt
 cp .env.example .env
-# edit .env with your Binance TESTNET API keys
+# edit .env
 ```
 
-Get testnet keys at https://testnet.binance.vision/
-
-## Usage
-
+## Cara Penggunaan
 ```bash
 python main.py
 ```
-
-Default runs in DRY_RUN=true (no real orders). Set DRY_RUN=false in .env to send orders to testnet.
-TESTNET controls whether the testnet endpoint is used.
+- Jika `SYMBOL` kosong, bot fetch semua simbol dan simpan ke `data/symbols.json`, lalu pilih berdasarkan RISK_LEVEL.
+- Default `DRY_RUN=true`: tidak kirim order nyata. Set `DRY_RUN=false` untuk testnet.
+- Log tersimpan di `logs/bot.log`.
 
 ## Safety
 - Default DRY_RUN=true. Never disable dry run on mainnet.
