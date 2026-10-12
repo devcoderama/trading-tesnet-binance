@@ -122,7 +122,7 @@ async function removeProvider(){ const name=document.getElementById('newProvider
   document.getElementById('aiMode').innerText=s.ai_mode||'-';
   document.getElementById('statusMsg').innerText=s.paused==='true'?'Bot paused':'Bot running';
 }
-function msg(t){ document.getElementById('statusMsg').innerText = t; }
+function msg(t){ const el=document.getElementById('statusMsg'); if(el) el.innerText=t; const toast=document.getElementById('toast'); if(toast){ toast.innerText=t; toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'),2500);} }
 async function setTf(){ const v=document.getElementById('tf').value.trim(); if(!v) return; await api('/api/config','POST',{key:'INTERVAL',value:v}); document.getElementById('interval').innerText=v; msg('Timeframe set: '+v); }
 async function setSyms(){ const v=document.getElementById('syms').value.trim(); if(!v) return; await api('/api/config','POST',{key:'SYMBOLS',value:v}); document.getElementById('symbols').innerText=v; msg('Symbols set.'); }
 async function setMode(){ const v=document.getElementById('mode').value; await api('/api/config','POST',{key:'SYMBOL_MODE',value:v}); document.getElementById('symbolMode').innerText=v; msg('Symbol mode: '+v); }
@@ -139,6 +139,7 @@ loadHistory();
 setInterval(loadStatus,5000);
 setInterval(loadHistory,10000);
 </script>
+  <div id="toast" class="hidden fixed bottom-4 right-4 bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl text-sm shadow-lg"></div>
 </body>
 </html>
 PY
