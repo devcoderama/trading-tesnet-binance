@@ -126,6 +126,16 @@ async def _run():
             set_config("SYMBOL_MODE", (event.message.text or "").strip().lower())
             _pending_mode.discard(event.sender_id)
             await event.reply("SYMBOL_MODE updated.")
+        text = event.message.text or ""
+        if text.startswith("/"):
+            _pending_miniuser.discard(event.sender_id)
+            _pending_ai_users.discard(event.sender_id)
+            _pending_ai_delete.discard(event.sender_id)
+            _pending_tf.discard(event.sender_id)
+            _pending_syms.discard(event.sender_id)
+            _pending_risk.discard(event.sender_id)
+            _pending_mode.discard(event.sender_id)
+            return
         if event.sender_id in _pending_miniuser:
             parts = (event.message.text or "").split(maxsplit=1)
             if len(parts) != 2:
