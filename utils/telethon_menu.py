@@ -9,7 +9,7 @@ def main_menu_buttons():
     ]
     url = os.getenv("MINIAPP_URL")
     if url:
-        btns.append([Button.web_app("Mini App", url)])
+        btns.append([Button.url("Mini App", url)])
     return btns
 
 def trading_menu_buttons():
