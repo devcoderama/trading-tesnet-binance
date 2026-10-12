@@ -48,6 +48,15 @@ async def _run():
     @client.on(events.CallbackQuery)
     async def cb(event):
         data = event.data.decode()
+        if data == "trading_timeframe":
+            await event.edit("Set Timeframe: (edit .env INTERVAL). Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            return
+        if data == "trading_symbols":
+            await event.edit("Symbols manage: set in .env SYMBOL/SYMBOLS or use auto. Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            return
+        if data == "trading_risk":
+            await event.edit("Set Risk: set RISK_LEVEL in settings/db. Back ->", buttons=[[Button.inline("Back", b"menu_trading")]])
+            return
         if data == "menu_trading":
             await event.edit("Trading Menu", buttons=trading_menu_buttons())
             return
