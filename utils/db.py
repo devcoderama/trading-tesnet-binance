@@ -14,15 +14,14 @@ def init_db():
         key TEXT PRIMARY KEY,
         value TEXT
     )""")
+    # remove telegram secrets from DB (stored in .env)
+    for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_USER_ID", "TELEGRAM_CHANNEL_ID"):
+        cur.execute("DELETE FROM config WHERE key=?", (k,))
     conn.commit()
-    # seed defaults
     cur.execute("SELECT COUNT(*) FROM config")
     if cur.fetchone()[0] == 0:
         defaults = {
             "MAX_SYMBOLS": os.getenv("MAX_SYMBOLS", "3"),
-            "TELEGRAM_BOT_TOKEN": os.getenv("TELEGRAM_BOT_TOKEN", ""),
-            "TELEGRAM_USER_ID": os.getenv("TELEGRAM_USER_ID", ""),
-            "TELEGRAM_CHANNEL_ID": os.getenv("TELEGRAM_CHANNEL_ID", ""),
             "USE_AI": os.getenv("USE_AI", "false"),
             "AI_PROVIDER": os.getenv("AI_PROVIDER", "gemini"),
             "AI_API_KEY": os.getenv("AI_API_KEY", ""),
